@@ -155,6 +155,21 @@
   .log div.er::before{content:'✕ ';color:var(--danger)}
   .log div.er{color:var(--danger)}
 
+  /* crop editor */
+  .crop-stage{position:relative;overflow:hidden;border-radius:var(--r);background:#101d1b;touch-action:none;cursor:grab;margin-top:16px;max-height:54vh}
+  .crop-stage.grabbing{cursor:grabbing}
+  .crop-stage img{position:absolute;top:0;left:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none;max-width:none;will-change:transform}
+  .crop-third{position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background:
+      linear-gradient(#fff,#fff) 33.34% 0/1px 100% no-repeat,
+      linear-gradient(#fff,#fff) 66.67% 0/1px 100% no-repeat,
+      linear-gradient(#fff,#fff) 0 33.34%/100% 1px no-repeat,
+      linear-gradient(#fff,#fff) 0 66.67%/100% 1px no-repeat}
+  .crop-row{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .crop-row label{font-size:12.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+  .crop-row input[type=range]{flex:1;accent-color:var(--primary);min-width:0}
+  .crop-hint{font-size:12.5px;color:var(--faint);margin-top:10px;line-height:1.45}
+
   .footnote{padding:40px 0 40px;font-size:12.5px;color:var(--faint);line-height:1.6}
 
   /* ---------- small screens ---------- */
@@ -304,6 +319,28 @@
     <div class="pub-right">
       <button class="btn btn-onDark btn-sm" id="discardAll">Discard all</button>
       <button class="btn btn-primary" id="publish">Publish to website</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CROP EDITOR ============ -->
+<div class="ovl" id="cropOvl">
+  <div class="ovl-card" style="max-width:620px">
+    <h3 id="cropTitle">Adjust photo</h3>
+    <div class="crop-stage" id="cropStage">
+      <img id="cropImg" alt="">
+      <div class="crop-third"></div>
+    </div>
+    <div class="crop-row">
+      <label for="cropZoom">Zoom</label>
+      <input type="range" id="cropZoom" min="1" max="4" step="0.01" value="1">
+      <button class="btn btn-sm btn-ghost" id="cropReset" type="button">Reset</button>
+    </div>
+    <p class="crop-hint">Drag the photo to move it inside the frame — what you see inside the frame is what visitors get.
+      Use zoom when the photo is the wrong shape for the slot. Thirds lines help you place the subject.</p>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="cropCancel" type="button">Cancel</button>
+      <button class="btn btn-green" id="cropSave" type="button">Save crop</button>
     </div>
   </div>
 </div>
@@ -492,22 +529,29 @@ function loadImage(file) {
   });
 }
 
-async function processImage(file, slot, { crop = true } = {}) {
+async function processImage(file, slot, { crop = true, cropWin = null } = {}) {
   const notes = [];
   const ext = (file.name.split('.').pop() || '').toLowerCase();
 
   // SVG: pass through untouched (vector, already tiny)
   if (file.type === 'image/svg+xml' || ext === 'svg') {
-    return { blob: file, ext: 'svg', w: null, h: null, notes, origKB: file.size / 1024, newKB: file.size / 1024 };
+    return { blob: file, ext: 'svg', w: null, h: null, notes, origKB: file.size / 1024, newKB: file.size / 1024, trimmed: 0 };
   }
 
   const im = await loadImage(file);
   const ow = im.naturalWidth, oh = im.naturalHeight;
   const want = RATIO[slot.ratio] || (ow / oh);
 
-  // choose output size
+  // choose the crop window: user-chosen, or automatic centre crop
   let sx = 0, sy = 0, sw = ow, sh = oh;
-  if (crop) {
+  if (cropWin) {
+    sw = Math.round(cropWin.sw); sh = Math.round(sw / want);
+    if (sh > oh) { sh = oh; sw = Math.round(sh * want); }
+    if (sw > ow) { sw = ow; sh = Math.round(sw / want); }
+    sx = Math.max(0, Math.min(Math.round(cropWin.sx), ow - sw));
+    sy = Math.max(0, Math.min(Math.round(cropWin.sy), oh - sh));
+    if (sw < ow || sh < oh) notes.push(`Cropped to ${slot.ratio} — your chosen area.`);
+  } else if (crop) {
     const have = ow / oh;
     if (Math.abs(have - want) > 0.008) {
       if (have > want) { sw = Math.round(oh * want); sx = Math.round((ow - sw) / 2); }
@@ -515,6 +559,7 @@ async function processImage(file, slot, { crop = true } = {}) {
       notes.push(`Trimmed to ${slot.ratio} (centre kept).`);
     }
   }
+  const trimmed = 1 - (sw * sh) / (ow * oh);
 
   const maxW = Math.min(2400, Math.max(slot.minWidth * 2, 1400));
   let outW = sw, outH = sh;
@@ -551,7 +596,7 @@ async function processImage(file, slot, { crop = true } = {}) {
     if (blob.size / 1024 > TARGET_KB) notes.push(`Still ${Math.round(blob.size / 1024)} KB after compressing — consider a simpler photo.`);
   }
 
-  return { blob, ext: outExt, w: outW, h: outH, notes, origKB: file.size / 1024, newKB: blob.size / 1024 };
+  return { blob, ext: outExt, w: outW, h: outH, notes, origKB: file.size / 1024, newKB: blob.size / 1024, trimmed };
 }
 
 async function processVideo(file, slot) {
@@ -805,6 +850,11 @@ function slotCard(slot) {
     const undo = el('button', 'btn btn-sm btn-ghost btn-danger', 'Remove');
     undo.onclick = e => { e.stopPropagation(); URL.revokeObjectURL(pend.previewUrl); delete state.pending[slot.id]; render(); };
     acts.appendChild(undo);
+    if (!isVideo && !pend.isSvg) {
+      const adj = el('button', 'btn btn-sm btn-ghost', 'Adjust crop');
+      adj.onclick = e => { e.stopPropagation(); openCropModal(slot); };
+      acts.appendChild(adj);
+    }
   }
   const pick = el('button', 'btn btn-sm btn-ghost', existing || pend ? 'Replace' : 'Choose file');
   pick.onclick = e => { e.stopPropagation(); input.click(); };
@@ -815,7 +865,7 @@ function slotCard(slot) {
   return card;
 }
 
-async function handleFile(slot, file) {
+async function handleFile(slot, file, cropWin = null) {
   const isVideo = slot.type === 'video';
   if (isVideo && !file.type.startsWith('video/')) { alert(`“${slot.id}” is a video slot. Please choose an .mp4 file.`); return; }
   if (!isVideo && !file.type.startsWith('image/')) { alert(`“${slot.id}” needs a photo. “${file.name}” is not an image.`); return; }
@@ -823,7 +873,7 @@ async function handleFile(slot, file) {
   const card = document.querySelector(`.slot[data-slot="${slot.id}"] .drop`);
   if (card) card.style.opacity = '.5';
   try {
-    const r = isVideo ? await processVideo(file, slot) : await processImage(file, slot);
+    const r = isVideo ? await processVideo(file, slot) : await processImage(file, slot, { cropWin });
     const old = state.pending[slot.id];
     if (old) URL.revokeObjectURL(old.previewUrl);
     state.pending[slot.id] = {
@@ -831,8 +881,14 @@ async function handleFile(slot, file) {
       filename: makeFilename(slot, r.ext),
       previewUrl: URL.createObjectURL(r.blob),
       notes: r.notes, origKB: r.origKB, newKB: r.newKB, w: r.w, h: r.h,
+      file: isVideo ? null : file,
+      crop: cropWin,
+      isSvg: !isVideo && r.ext === 'svg',
     };
     render();
+    // if the automatic centre crop would cut off a lot of the photo,
+    // let the user choose the area themselves
+    if (!cropWin && !isVideo && !state.pending[slot.id].isSvg && r.trimmed > 0.1) openCropModal(slot);
   } catch (e) {
     alert('Could not use that file: ' + e.message);
     if (card) card.style.opacity = '';
@@ -983,6 +1039,119 @@ async function publish() {
     $('#ovlActs').append(close);
   }
 }
+
+/* ---------------- crop editor ---------------- */
+const cropM = { slot: null, url: null, iw: 0, ih: 0, cw: 0, ch: 0, cover: 1, zoom: 1, dx: 0, dy: 0, dragging: false, lx: 0, ly: 0 };
+
+function clampCrop() {
+  const s = cropM.cover * cropM.zoom;
+  cropM.dx = Math.min(0, Math.max(cropM.cw - cropM.iw * s, cropM.dx));
+  cropM.dy = Math.min(0, Math.max(cropM.ch - cropM.ih * s, cropM.dy));
+}
+function applyCropTransform() {
+  const s = cropM.cover * cropM.zoom;
+  $('#cropImg').style.transform = `translate(${cropM.dx}px, ${cropM.dy}px) scale(${s})`;
+}
+function cropWindow() {
+  const s = cropM.cover * cropM.zoom;
+  return { sx: -cropM.dx / s, sy: -cropM.dy / s, sw: cropM.cw / s, sh: cropM.ch / s };
+}
+
+async function openCropModal(slot) {
+  const p = state.pending[slot.id];
+  if (!p || !p.file || p.isSvg) return;
+  try { await loadImage(p.file); } catch (e) { alert('Could not open the original photo: ' + e.message); return; }
+  cropM.slot = slot;
+  if (cropM.url) URL.revokeObjectURL(cropM.url);
+  cropM.url = URL.createObjectURL(p.file);
+
+  const im = $('#cropImg');
+  im.onload = () => {
+    cropM.iw = im.naturalWidth; cropM.ih = im.naturalHeight;
+    const ratio = RATIO[slot.ratio] || 4 / 3;
+    const ovl = $('#cropOvl');
+    const card = ovl.querySelector('.ovl-card');
+    ovl.classList.add('on');
+    const contentW = card.clientWidth - 60;
+    const chMax = Math.round(window.innerHeight * 0.54);
+    let cw = contentW, ch = Math.round(cw / ratio);
+    if (ch > chMax) { ch = chMax; cw = Math.round(ch * ratio); }
+    const stage = $('#cropStage');
+    stage.style.width = cw + 'px'; stage.style.height = ch + 'px';
+    cropM.cw = cw; cropM.ch = ch;
+    cropM.cover = Math.max(cw / cropM.iw, ch / cropM.ih);
+
+    if (p.crop) {
+      const wantScale = cropM.iw / p.crop.sw;
+      cropM.zoom = Math.max(1, Math.min(4, wantScale / cropM.cover));
+      const s = cropM.cover * cropM.zoom;
+      cropM.dx = -p.crop.sx * s; cropM.dy = -p.crop.sy * s;
+    } else {
+      cropM.zoom = 1;
+      cropM.dx = (cw - cropM.iw * cropM.cover) / 2;
+      cropM.dy = (ch - cropM.ih * cropM.cover) / 2;
+    }
+    clampCrop(); applyCropTransform();
+    $('#cropZoom').value = cropM.zoom;
+    $('#cropTitle').textContent = 'Adjust photo — ' + slot.id;
+  };
+  im.src = cropM.url;
+}
+
+function closeCropModal() {
+  $('#cropOvl').classList.remove('on');
+  if (cropM.url) { URL.revokeObjectURL(cropM.url); cropM.url = null; }
+  cropM.slot = null;
+}
+
+$('#cropCancel').onclick = closeCropModal;
+$('#cropReset').onclick = () => {
+  if (!cropM.slot) return;
+  cropM.zoom = 1;
+  cropM.dx = (cropM.cw - cropM.iw * cropM.cover) / 2;
+  cropM.dy = (cropM.ch - cropM.ih * cropM.cover) / 2;
+  clampCrop(); applyCropTransform();
+  $('#cropZoom').value = 1;
+};
+$('#cropZoom').oninput = e => {
+  if (!cropM.slot) return;
+  const oldS = cropM.cover * cropM.zoom;
+  const cx = (cropM.cw / 2 - cropM.dx) / oldS;
+  const cy = (cropM.ch / 2 - cropM.dy) / oldS;
+  cropM.zoom = Number(e.target.value);
+  const s = cropM.cover * cropM.zoom;
+  cropM.dx = cropM.cw / 2 - cx * s;
+  cropM.dy = cropM.ch / 2 - cy * s;
+  clampCrop(); applyCropTransform();
+};
+
+(() => {
+  const stage = $('#cropStage');
+  stage.addEventListener('pointerdown', e => {
+    if (!cropM.slot) return;
+    cropM.dragging = true; cropM.lx = e.clientX; cropM.ly = e.clientY;
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    stage.classList.add('grabbing');
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!cropM.dragging) return;
+    cropM.dx += e.clientX - cropM.lx;
+    cropM.dy += e.clientY - cropM.ly;
+    cropM.lx = e.clientX; cropM.ly = e.clientY;
+    clampCrop(); applyCropTransform();
+  });
+  ['pointerup', 'pointercancel'].forEach(ev => stage.addEventListener(ev, () => {
+    cropM.dragging = false; stage.classList.remove('grabbing');
+  }));
+})();
+
+$('#cropSave').onclick = async () => {
+  const slot = cropM.slot;
+  const p = state.pending[slot.id];
+  const win = cropWindow();
+  closeCropModal();
+  await handleFile(slot, p.file, win);
+};
 
 /* ---------------- auto sign-in ---------------- */
 (async function init() {
