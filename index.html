@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Danang Chiropractic — Photo Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f8f5ee; --surface:#fffdf8; --surface2:#fbf8f1; --offset:#f0ebe0; --deep:#0f3f3c;
+    --divider:#e6e0d3; --border:#d8d1c1;
+    --text:#1e2a28; --muted:#5c6763; --faint:#8a938f;
+    --primary:#0f4f4a; --primary-hover:#0b3e3a; --primary-soft:#e3ece9;
+    --accent:#b0512f; --accent-hover:#93401f; --accent-soft:#f7e7df;
+    --success:#3d7a3f; --warning:#96591b; --danger:#a3342a;
+    --r-sm:6px; --r:10px; --r-lg:14px; --r-xl:20px;
+    --shadow:0 1px 2px rgba(15,63,60,.06),0 4px 14px rgba(15,63,60,.06);
+    --shadow-lg:0 8px 30px rgba(15,63,60,.14);
+    --display:'Lora',Georgia,serif; --body:'Manrope',-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--body);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.2}
+  button{font-family:inherit;font-size:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  input{font-family:inherit;font-size:inherit}
+  a{color:var(--primary)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;background:var(--offset);padding:1px 5px;border-radius:4px}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  header.top{background:var(--deep);color:#f1f5f3;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+  .top-in{display:flex;align-items:center;gap:16px;min-height:64px}
+  .logo{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo svg{flex-shrink:0}
+  .logo b{font-family:var(--display);font-size:15px;font-weight:600;white-space:nowrap}
+  .logo span{display:block;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:rgba(241,245,243,.6);white-space:nowrap}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 18px;
+       border-radius:999px;font-size:14px;font-weight:600;transition:.15s;white-space:nowrap}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover:not(:disabled){background:var(--accent-hover)}
+  .btn-green{background:var(--primary);color:#fff}
+  .btn-green:hover:not(:disabled){background:var(--primary-hover)}
+  .btn-ghost{border:1px solid var(--border);color:var(--text);background:var(--surface)}
+  .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+  .btn-onDark{border:1px solid rgba(241,245,243,.35);color:#f1f5f3}
+  .btn-onDark:hover{background:rgba(241,245,243,.12)}
+  .btn-sm{min-height:34px;padding:0 13px;font-size:13px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-danger{color:var(--danger)}
+
+  /* ---------- screens ---------- */
+  .screen{display:none}
+  .screen.on{display:block}
+
+  /* setup */
+  .setup{max-width:620px;margin:0 auto;padding:56px 24px 80px}
+  .setup h1{font-size:29px;margin-bottom:10px}
+  .setup .lead{color:var(--muted);margin-bottom:28px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:26px;box-shadow:var(--shadow)}
+  .steps{counter-reset:s;margin:0 0 22px}
+  .steps li{counter-increment:s;list-style:none;position:relative;padding-left:38px;margin-bottom:15px;font-size:14.5px;color:var(--muted)}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:-1px;width:25px;height:25px;border-radius:50%;
+       background:var(--primary-soft);color:var(--primary);font-weight:700;font-size:12.5px;display:grid;place-items:center;font-family:var(--body)}
+  .steps li b{color:var(--text);font-weight:600}
+  label.fl{display:block;font-size:12.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .in{width:100%;min-height:46px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--r);
+      background:var(--surface);font-size:14px;color:var(--text)}
+  .in:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .in.mono{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+  .hint{font-size:12.5px;color:var(--faint);margin-top:7px;line-height:1.45}
+
+  /* notices */
+  .notice{border-left:3px solid var(--primary);background:var(--primary-soft);padding:13px 16px;border-radius:var(--r-sm);font-size:13.5px;margin:16px 0}
+  .notice.warn{border-color:var(--warning);background:#fbf1e2}
+  .notice.err{border-color:var(--danger);background:#fae9e7}
+  .notice.ok{border-color:var(--success);background:#e9f2e9}
+  .notice b{font-weight:700}
+
+  /* toolbar */
+  .toolbar{background:var(--surface);border-bottom:1px solid var(--divider);position:sticky;top:64px;z-index:40}
+  .tb-in{display:flex;align-items:center;gap:14px;padding-block:13px;flex-wrap:wrap}
+  .stat{display:flex;gap:18px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .stat b{color:var(--text);font-variant-numeric:tabular-nums}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+  .dot.filled{background:var(--success)} .dot.empty{background:var(--border)} .dot.pending{background:var(--accent)}
+  .tb-right{margin-left:auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .seg{display:inline-flex;padding:3px;gap:3px;background:var(--offset);border:1px solid var(--border);border-radius:999px}
+  .seg button{min-height:32px;padding:0 14px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .seg button[aria-pressed=true]{background:var(--surface);color:var(--primary);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+  /* sections + grid */
+  .sec{padding:34px 0 6px}
+  .sec h2{font-size:18px;margin-bottom:3px}
+  .sec .sub{font-size:13px;color:var(--faint);margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+  @media(min-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1040px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+  /* slot card */
+  .slot{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;
+        display:flex;flex-direction:column;transition:.15s}
+  .slot.is-pending{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .slot.drag{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .drop{position:relative;background:var(--offset);display:grid;place-items:center;cursor:pointer;overflow:hidden;
+        max-height:250px;min-height:132px}
+  .drop img,.drop video{width:100%;height:100%;object-fit:cover;display:block}
+  .drop .ph{text-align:center;padding:18px;color:var(--faint)}
+  .drop .ph svg{opacity:.5;margin-bottom:7px}
+  .drop .ph span{display:block;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+  .drop .ph em{display:block;font-size:11px;font-style:normal;margin-top:3px}
+  .drop-hover{position:absolute;inset:0;background:rgba(15,79,74,.86);color:#fff;display:none;place-items:center;
+        text-align:center;padding:14px;font-size:13px;font-weight:600}
+  .slot.drag .drop-hover{display:grid}
+  .badge{position:absolute;top:9px;left:9px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+         padding:3px 9px;border-radius:999px;background:rgba(255,253,248,.94);color:var(--muted);box-shadow:0 1px 3px rgba(0,0,0,.13)}
+  .badge.filled{color:var(--success)} .badge.pending{background:var(--accent);color:#fff}
+  .slot-body{padding:14px 15px 15px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .slot-id{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--primary);font-weight:600;overflow-wrap:anywhere}
+  .slot-desc{font-size:12.5px;color:var(--muted);line-height:1.45}
+  .slot-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:9px;border-top:1px solid var(--divider)}
+  .pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--primary-soft);color:var(--primary);
+        letter-spacing:.02em;white-space:nowrap}
+  .pill.n{background:var(--offset);color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-weight:600}
+  .slot-file{font-size:11.5px;color:var(--faint);font-family:ui-monospace,Menlo,monospace;line-height:1.6}
+  .slot-file b{overflow-wrap:anywhere;font-weight:600;color:var(--muted)}
+  .slot-file .nb{white-space:nowrap}
+  .slot-acts{display:flex;gap:7px;flex-wrap:wrap;padding-top:3px}
+  .warnrow{font-size:12px;color:var(--warning);display:flex;gap:6px;align-items:flex-start;line-height:1.4}
+  .warnrow svg{flex-shrink:0;margin-top:1px}
+
+  /* publish bar */
+  .pubbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--deep);color:#f1f5f3;
+          box-shadow:0 -4px 24px rgba(15,63,60,.24);transform:translateY(110%);transition:transform .22s ease}
+  .pubbar.on{transform:none}
+  .pub-in{display:flex;align-items:center;gap:16px;padding-block:13px;flex-wrap:wrap}
+  .pub-in .txt{font-size:14px}
+  .pub-in .txt b{font-family:var(--display);font-size:16px}
+  .pub-in .sm{font-size:12px;color:rgba(241,245,243,.65)}
+  .pub-right{margin-left:auto;display:flex;gap:9px;flex-wrap:wrap}
+
+  /* progress */
+  .ovl{position:fixed;inset:0;z-index:90;background:rgba(15,30,28,.6);display:none;place-items:center;padding:24px}
+  .ovl.on{display:grid}
+  .ovl-card{background:var(--surface);border-radius:var(--r-xl);padding:30px;max-width:520px;width:100%;box-shadow:var(--shadow-lg)}
+  .ovl-card h3{font-size:19px;margin-bottom:14px}
+  .bar{height:7px;background:var(--offset);border-radius:999px;overflow:hidden;margin:16px 0 10px}
+  .bar i{display:block;height:100%;background:var(--primary);width:0;transition:width .25s;border-radius:999px}
+  .log{font-size:12.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;max-height:190px;overflow-y:auto;line-height:1.7}
+  .log div.ok::before{content:'✓ ';color:var(--success)}
+  .log div.er::before{content:'✕ ';color:var(--danger)}
+  .log div.er{color:var(--danger)}
+
+  .footnote{padding:40px 0 40px;font-size:12.5px;color:var(--faint);line-height:1.6}
+
+  /* ---------- small screens ---------- */
+  @media(max-width:720px){
+    .wrap{padding:0 16px}
+    .top-in{min-height:58px;gap:10px}
+    .logo svg{width:26px;height:26px}
+    .logo b{font-size:14px}
+    .logo span{display:none}
+    .top-right{gap:7px}
+    .top-right .btn{min-height:32px;padding:0 11px;font-size:12.5px}
+    .toolbar{top:58px}
+    .tb-in{gap:10px}
+    .stat{font-size:12.5px;gap:12px;width:100%}
+    .tb-right{margin-left:0;width:100%}
+    .seg{width:100%}
+    .seg button{flex:1;padding:0 6px}
+    .pub-in{flex-direction:column;align-items:stretch;gap:11px;padding-block:12px}
+    .pub-right{margin-left:0}
+    .pub-right .btn{flex:1}
+    .setup{padding:34px 16px 60px}
+    .setup h1{font-size:24px}
+  }
+  @media(max-width:420px){
+    .top-right .btn[data-short]{padding:0 9px}
+  }
+  .hidden{display:none!important}
+  .lbl-short{display:none}
+  @media(max-width:720px){.lbl-full{display:none}.lbl-short{display:inline}}
+  .spin{animation:sp .8s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <div class="logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="1.6" opacity=".55"/>
+        <path d="M16 7v18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M11 11h10M11.8 15.2h8.4M13 19.4h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <b>Photo Manager</b>
+        <span>Danang Chiropractic</span>
+      </div>
+    </div>
+    <div class="top-right">
+      <button class="btn btn-sm btn-onDark hidden" id="reloadBtn" data-short="1">
+        <span class="lbl-full">Reload from GitHub</span><span class="lbl-short">Reload</span>
+      </button>
+      <button class="btn btn-sm btn-onDark hidden" id="signOut" data-short="1">
+        <span class="lbl-full">Sign out</span><span class="lbl-short">Exit</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SETUP ============ -->
+<section class="screen on" id="scSetup">
+  <div class="setup">
+    <h1>Add photos to your website</h1>
+    <p class="lead">Drag a photo onto a slot, then press Publish. This tool puts the file into your
+      website and fills in the right filename for you — no code, no terminal.</p>
+
+    <div class="card">
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 18px;line-height:1.5">
+        First time here? Ask Edouard to add you once as a <b>collaborator</b> on the website repository
+        (<a href="https://github.com/sabourdyedouard/danangchiro-website/settings/access" target="_blank" rel="noopener">repository settings</a>).
+        Then follow these steps.</p>
+      <ol class="steps">
+        <li>Open <a href="https://github.com/settings/tokens/new?scopes=repo&description=Photo%20Manager" target="_blank" rel="noopener">this GitHub page</a> (it opens in a new tab). The needed <b>repo</b> permission is already ticked.</li>
+        <li>Scroll to the bottom and click <b>Generate token</b>.</li>
+        <li>Copy the token shown (it starts with <code>ghp_</code>). You will only see it once.</li>
+        <li>Paste it below and press <b>Connect</b>.</li>
+      </ol>
+
+      <label class="fl" for="tok">Your GitHub token</label>
+      <input class="in mono" id="tok" type="password" placeholder="ghp_… or github_pat_…" autocomplete="off" spellcheck="false">
+      <p class="hint">Stored only in this browser, on this device. It is never sent anywhere except to GitHub.
+        Press <b>Sign out</b> any time to erase it.
+        Don't share your token — anyone with it could change the website.</p>
+
+      <details style="margin-top:16px;font-size:12.5px;color:var(--faint)">
+        <summary style="cursor:pointer;color:var(--muted)">Repository owner? You can use a fine-grained token instead</summary>
+        <p style="margin-top:8px;line-height:1.5">Create one on the <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained tokens page</a>,
+          restrict it to <b>danangchiro-website</b>, and set <b>Contents</b> to <b>Read and write</b>.</p>
+      </details>
+
+      <div id="setupMsg"></div>
+
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+        <button class="btn btn-green" id="connect">Connect</button>
+        <button class="btn btn-ghost" id="advToggle" type="button">Advanced</button>
+      </div>
+
+      <div id="adv" class="hidden" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--divider)">
+        <label class="fl" for="repo">Repository</label>
+        <input class="in mono" id="repo" value="sabourdyedouard/danangchiro-website">
+        <label class="fl" for="branch" style="margin-top:14px">Branch</label>
+        <input class="in mono" id="branch" value="main">
+        <p class="hint">Leave these alone unless you know you need to change them. Publishing to a branch
+          other than <code>main</code> will not update your live website.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MAIN ============ -->
+<section class="screen" id="scMain">
+  <div class="toolbar">
+    <div class="wrap tb-in">
+      <div class="stat">
+        <span><span class="dot filled"></span><b id="nFilled">0</b> with a photo</span>
+        <span><span class="dot empty"></span><b id="nEmpty">0</b> still empty</span>
+        <span><span class="dot pending"></span><b id="nPending">0</b> waiting to publish</span>
+      </div>
+      <div class="tb-right">
+        <div class="seg" role="group" aria-label="Filter slots">
+          <button data-f="all" aria-pressed="true">All</button>
+          <button data-f="empty" aria-pressed="false">Empty only</button>
+          <button data-f="filled" aria-pressed="false">Has photo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="branchWarn"></div>
+    <div id="sections"></div>
+    <p class="footnote">
+      Photos are resized and compressed in your browser before uploading, so pages stay fast.<br>
+      Each slot shows the shape it needs (for example <b>4:3</b> is a normal landscape photo, <b>1:1</b> a square,
+      <b>16:9</b> a wide/video shape, <b>4:5</b> an upright portrait) and the smallest width that still looks sharp.<br>
+      Never upload a photo of a patient without their written permission.
+    </p>
+  </div>
+</section>
+
+<!-- ============ PUBLISH BAR ============ -->
+<div class="pubbar" id="pubbar">
+  <div class="wrap pub-in">
+    <div class="txt">
+      <b id="pubCount">0 photos</b> ready to publish
+      <div class="sm" id="pubList"></div>
+    </div>
+    <div class="pub-right">
+      <button class="btn btn-onDark btn-sm" id="discardAll">Discard all</button>
+      <button class="btn btn-primary" id="publish">Publish to website</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROGRESS ============ -->
+<div class="ovl" id="ovl">
+  <div class="ovl-card">
+    <h3 id="ovlTitle">Publishing…</h3>
+    <div class="bar"><i id="ovlBar"></i></div>
+    <div class="log" id="ovlLog"></div>
+    <div id="ovlMsg"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap" id="ovlActs"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   Danang Chiropractic — Photo Manager
+   A single-file tool that uploads images to public/assets/ and writes the
+   filename into the matching content/*.json field, in ONE GitHub commit.
+   Netlify then rebuilds the site automatically.
+   ========================================================================= */
+
+const API = 'https://api.github.com';
+const LS_TOKEN = 'dncmh.token', LS_REPO = 'dncmh.repo', LS_BRANCH = 'dncmh.branch';
+
+const state = {
+  token: '', repo: '', branch: 'main',
+  slots: [],
+  files: {},      // path -> { text, sha }
+  pending: {},    // slotId -> { blob, filename, previewUrl, note, origKB, newKB, w, h }
+  filter: 'all',
+  headSha: null,
+};
+
+const $ = s => document.querySelector(s);
+const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h !== undefined) e.innerHTML = h; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---------------- surgical JSON editing (preserves formatting) ---------------- */
+function findValueSpan(text, path) {
+  let i = 0;
+  const ws = () => { while (i < text.length && /\s/.test(text[i])) i++; };
+  function readString() {
+    if (text[i] !== '"') throw new Error('expected string at ' + i);
+    i++;
+    while (i < text.length) {
+      const c = text[i];
+      if (c === '\\') { i += (text[i + 1] === 'u') ? 6 : 2; continue; }
+      if (c === '"') { i++; return; }
+      i++;
+    }
+    throw new Error('unterminated string');
+  }
+  function keyString() {
+    if (text[i] !== '"') throw new Error('expected key at ' + i);
+    i++; let out = '';
+    while (i < text.length) {
+      const c = text[i];
+      if (c === '\\') {
+        const n = text[i + 1];
+        const map = { n: '\n', t: '\t', r: '\r', b: '\b', f: '\f', '"': '"', '\\': '\\', '/': '/' };
+        if (n === 'u') { out += String.fromCharCode(parseInt(text.slice(i + 2, i + 6), 16)); i += 6; }
+        else { out += (map[n] !== undefined ? map[n] : n); i += 2; }
+        continue;
+      }
+      if (c === '"') { i++; return out; }
+      out += c; i++;
+    }
+    throw new Error('unterminated key');
+  }
+  function skipValue() {
+    ws();
+    const c = text[i];
+    if (c === '"') { readString(); return; }
+    if (c === '{' || c === '[') {
+      const open = c, close = c === '{' ? '}' : ']';
+      let depth = 0;
+      while (i < text.length) {
+        const ch = text[i];
+        if (ch === '"') { readString(); continue; }
+        if (ch === open) depth++;
+        else if (ch === close) { depth--; i++; if (depth === 0) return; continue; }
+        i++;
+      }
+      throw new Error('unterminated ' + open);
+    }
+    while (i < text.length && !/[,}\]\s]/.test(text[i])) i++;
+  }
+  function descend(d) {
+    ws();
+    if (d === path.length) { const start = i; skipValue(); return { start, end: i }; }
+    const key = path[d], c = text[i];
+    if (c === '{') {
+      i++;
+      for (;;) {
+        ws();
+        if (text[i] === '}') throw new Error('key not found: ' + key);
+        const k = keyString(); ws();
+        if (text[i] !== ':') throw new Error('expected : at ' + i);
+        i++;
+        if (k === String(key)) return descend(d + 1);
+        skipValue(); ws();
+        if (text[i] === ',') { i++; continue; }
+        throw new Error('key not found: ' + key);
+      }
+    }
+    if (c === '[') {
+      i++; let idx = 0; const want = Number(key);
+      if (!Number.isInteger(want)) throw new Error('bad array index: ' + key);
+      for (;;) {
+        ws();
+        if (text[i] === ']') throw new Error('index out of range: ' + key);
+        if (idx === want) return descend(d + 1);
+        skipValue(); idx++; ws();
+        if (text[i] === ',') { i++; continue; }
+        throw new Error('index out of range: ' + key);
+      }
+    }
+    throw new Error('cannot descend looking for ' + key);
+  }
+  return descend(0);
+}
+function setStringAtPath(text, path, value) {
+  const { start, end } = findValueSpan(text, path);
+  return text.slice(0, start) + JSON.stringify(String(value)) + text.slice(end);
+}
+function getStringAtPath(text, path) {
+  const { start, end } = findValueSpan(text, path);
+  try { return JSON.parse(text.slice(start, end)); } catch (e) { return ''; }
+}
+
+/* slot.path -> { file, keys } */
+function resolveSlot(p) {
+  const a = p.split('.');
+  if (a[0] === 'site') return { file: 'content/site.json', keys: a.slice(1) };
+  if (a[0] === 'pages') return { file: 'content/pages/' + a[1] + '.json', keys: a.slice(2) };
+  throw new Error('unknown media path: ' + p);
+}
+
+/* ---------------- GitHub ---------------- */
+async function gh(path, opts = {}) {
+  const r = await fetch(API + path, {
+    ...opts,
+    headers: {
+      Authorization: 'Bearer ' + state.token,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(opts.headers || {}),
+    },
+  });
+  if (!r.ok) {
+    let d = ''; try { d = (await r.json()).message || ''; } catch (e) {}
+    const e = new Error(`GitHub ${r.status}${d ? ': ' + d : ''}`); e.status = r.status; throw e;
+  }
+  return r.status === 204 ? null : r.json();
+}
+const b64ToText = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\n/g, '')), c => c.charCodeAt(0)));
+const textToB64 = t => { const b = new TextEncoder().encode(t); let s = ''; b.forEach(x => s += String.fromCharCode(x)); return btoa(s); };
+function blobToB64(blob) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error('could not read file'));
+    fr.onload = () => res(String(fr.result).split(',')[1]);
+    fr.readAsDataURL(blob);
+  });
+}
+
+async function getFile(path) {
+  const d = await gh(`/repos/${state.repo}/contents/${path}?ref=${encodeURIComponent(state.branch)}`);
+  return { text: b64ToText(d.content), sha: d.sha };
+}
+
+/* ---------------- image processing ---------------- */
+const RATIO = { '1:1': 1, '4:3': 4 / 3, '16:9': 16 / 9, '4:5': 4 / 5, '1.91:1': 1.91 };
+const TARGET_KB = 480;
+
+function loadImage(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => { URL.revokeObjectURL(url); res(im); };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('That file is not an image the browser can read.')); };
+    im.src = url;
+  });
+}
+
+async function processImage(file, slot, { crop = true } = {}) {
+  const notes = [];
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+  // SVG: pass through untouched (vector, already tiny)
+  if (file.type === 'image/svg+xml' || ext === 'svg') {
+    return { blob: file, ext: 'svg', w: null, h: null, notes, origKB: file.size / 1024, newKB: file.size / 1024 };
+  }
+
+  const im = await loadImage(file);
+  const ow = im.naturalWidth, oh = im.naturalHeight;
+  const want = RATIO[slot.ratio] || (ow / oh);
+
+  // choose output size
+  let sx = 0, sy = 0, sw = ow, sh = oh;
+  if (crop) {
+    const have = ow / oh;
+    if (Math.abs(have - want) > 0.008) {
+      if (have > want) { sw = Math.round(oh * want); sx = Math.round((ow - sw) / 2); }
+      else { sh = Math.round(ow / want); sy = Math.round((oh - sh) / 2); }
+      notes.push(`Trimmed to ${slot.ratio} (centre kept).`);
+    }
+  }
+
+  const maxW = Math.min(2400, Math.max(slot.minWidth * 2, 1400));
+  let outW = sw, outH = sh;
+  if (outW > maxW) { outH = Math.round(outH * maxW / outW); outW = maxW; }
+
+  if (sw < slot.minWidth) {
+    notes.push(`Low resolution: this is ${sw}px wide, ${slot.minWidth}px is recommended. It may look soft.`);
+  }
+
+  // transparency matters for the logo — keep PNG
+  const keepPng = (slot.id === 'site-logo') && (file.type === 'image/png' || ext === 'png');
+
+  const cv = document.createElement('canvas');
+  cv.width = outW; cv.height = outH;
+  const cx = cv.getContext('2d');
+  cx.imageSmoothingQuality = 'high';
+  if (!keepPng) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, outW, outH); }
+  cx.drawImage(im, sx, sy, sw, sh, 0, 0, outW, outH);
+
+  const toBlob = (type, q) => new Promise(r => cv.toBlob(r, type, q));
+
+  let blob, outExt;
+  if (keepPng) {
+    blob = await toBlob('image/png');
+    outExt = 'png';
+  } else {
+    outExt = 'jpg';
+    let q = 0.86;
+    blob = await toBlob('image/jpeg', q);
+    while (blob.size / 1024 > TARGET_KB && q > 0.42) {
+      q -= 0.08;
+      blob = await toBlob('image/jpeg', q);
+    }
+    if (blob.size / 1024 > TARGET_KB) notes.push(`Still ${Math.round(blob.size / 1024)} KB after compressing — consider a simpler photo.`);
+  }
+
+  return { blob, ext: outExt, w: outW, h: outH, notes, origKB: file.size / 1024, newKB: blob.size / 1024 };
+}
+
+async function processVideo(file, slot) {
+  const notes = [];
+  const mb = file.size / 1048576;
+  if (mb > 15) notes.push(`This video is ${mb.toFixed(1)} MB. Large videos slow the site down and bloat the repository — under 15 MB is much better.`);
+  const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+  if (!['mp4', 'webm'].includes(ext)) notes.push('Use an .mp4 file for best browser support.');
+  return { blob: file, ext, w: null, h: null, notes, origKB: file.size / 1024, newKB: file.size / 1024 };
+}
+
+/* deterministic, cache-busting, tidy filename */
+function makeFilename(slot, ext) {
+  const stamp = Date.now().toString(36).slice(-5);
+  return `${slot.id}-${stamp}.${ext}`;
+}
+
+/* ---------------- boot ---------------- */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+}
+
+$('#advToggle').onclick = () => $('#adv').classList.toggle('hidden');
+
+$('#connect').onclick = async () => {
+  const btn = $('#connect');
+  const t = $('#tok').value.trim();
+  $('#setupMsg').innerHTML = '';
+  if (!t) { $('#setupMsg').innerHTML = '<div class="notice err">Please paste your token first.</div>'; return; }
+  state.token = t;
+  state.repo = $('#repo').value.trim();
+  state.branch = $('#branch').value.trim() || 'main';
+  btn.disabled = true; btn.textContent = 'Checking…';
+  try {
+    await loadEverything();
+    localStorage.setItem(LS_TOKEN, t);
+    localStorage.setItem(LS_REPO, state.repo);
+    localStorage.setItem(LS_BRANCH, state.branch);
+    enterApp();
+  } catch (e) {
+    let msg = e.message;
+    if (e.status === 401) msg = 'GitHub rejected that token. Check you copied all of it, and that it has not expired.';
+    if (e.status === 404) msg = 'Could not find the repository or branch. Check the Advanced settings — and that your GitHub account has been invited to <b>danangchiro-website</b>.';
+    if (e.status === 403) msg = 'The token does not have permission. For a classic token, make sure the <b>repo</b> permission was ticked. For a fine-grained token, set <b>Contents</b> to <b>Read and write</b>.';
+    $('#setupMsg').innerHTML = `<div class="notice err">${msg}</div>`;
+  } finally { btn.disabled = false; btn.textContent = 'Connect'; }
+};
+
+$('#signOut').onclick = () => {
+  if (!confirm('Erase your saved token from this browser?')) return;
+  localStorage.removeItem(LS_TOKEN);
+  location.reload();
+};
+$('#reloadBtn').onclick = async () => {
+  if (Object.keys(state.pending).length && !confirm('You have photos waiting to publish. Reloading will discard them. Continue?')) return;
+  state.pending = {};
+  const b = $('#reloadBtn'); const keep = b.innerHTML;
+  b.disabled = true; b.innerHTML = 'Reloading…';
+  try { await loadEverything(); render(); } catch (e) { alert('Reload failed: ' + e.message); }
+  b.disabled = false; b.innerHTML = keep;
+};
+
+async function loadEverything() {
+  // slots
+  const ms = await getFile('content/mediaSlots.json');
+  state.slots = JSON.parse(ms.text);
+  // every file referenced by a slot
+  const needed = [...new Set(state.slots.map(s => resolveSlot(s.path).file))];
+  state.files = {};
+  await Promise.all(needed.map(async f => { state.files[f] = await getFile(f); }));
+}
+
+function enterApp() {
+  showScreen('scMain');
+  $('#signOut').classList.remove('hidden');
+  $('#reloadBtn').classList.remove('hidden');
+  if (state.branch !== 'main') {
+    $('#branchWarn').innerHTML = `<div class="notice warn" style="margin-top:18px">You are working on branch
+      <code>${esc(state.branch)}</code>, not <code>main</code>. Publishing here will <b>not</b> change your live website.</div>`;
+  }
+  render();
+}
+
+/* ---------------- rendering ---------------- */
+function currentFilename(slot) {
+  const { file, keys } = resolveSlot(slot.path);
+  const f = state.files[file];
+  if (!f) return '';
+  try { return getStringAtPath(f.text, keys) || ''; } catch (e) { return ''; }
+}
+
+function rawUrl(filename) {
+  return `https://raw.githubusercontent.com/${state.repo}/${encodeURIComponent(state.branch)}/public/assets/${encodeURIComponent(filename)}`;
+}
+
+/* existing photos are fetched through the GitHub API with the token, so they
+   display even though the repository is private; results are cached */
+const assetCache = {};
+async function assetObjectUrl(filename) {
+  if (assetCache[filename] !== undefined) return assetCache[filename];
+  const p = (async () => {
+    const r = await fetch(`${API}/repos/${state.repo}/contents/public/assets/${encodeURIComponent(filename)}?ref=${encodeURIComponent(state.branch)}`, {
+      headers: {
+        Authorization: 'Bearer ' + state.token,
+        Accept: 'application/vnd.github.raw',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+    if (!r.ok) return null;
+    return URL.createObjectURL(await r.blob());
+  })();
+  assetCache[filename] = p;
+  try { return await p; } catch (e) { delete assetCache[filename]; return null; }
+}
+
+function render() {
+  const host = $('#sections');
+  host.innerHTML = '';
+
+  // group by section, preserving slot file order
+  const groups = [];
+  const seen = new Map();
+  state.slots.forEach(s => {
+    const k = s.section || 'Other';
+    if (!seen.has(k)) { seen.set(k, []); groups.push([k, seen.get(k)]); }
+    seen.get(k).push(s);
+  });
+
+  let nFilled = 0, nEmpty = 0;
+  state.slots.forEach(s => { (state.pending[s.id] || currentFilename(s)) ? nFilled++ : nEmpty++; });
+  const nPending = Object.keys(state.pending).length;
+  $('#nFilled').textContent = nFilled - nPending < 0 ? 0 : state.slots.filter(s => currentFilename(s)).length;
+  $('#nEmpty').textContent = state.slots.filter(s => !currentFilename(s) && !state.pending[s.id]).length;
+  $('#nPending').textContent = nPending;
+
+  groups.forEach(([name, slots]) => {
+    const visible = slots.filter(s => {
+      if (state.filter === 'all') return true;
+      const has = !!currentFilename(s);
+      return state.filter === 'filled' ? has : !has;
+    });
+    if (!visible.length) return;
+
+    const sec = el('div', 'sec');
+    const done = slots.filter(s => currentFilename(s)).length;
+    sec.appendChild(el('h2', null, esc(name)));
+    sec.appendChild(el('p', 'sub', `${done} of ${slots.length} have a photo`));
+    const grid = el('div', 'grid');
+    visible.forEach(s => grid.appendChild(slotCard(s)));
+    sec.appendChild(grid);
+    host.appendChild(sec);
+  });
+
+  updatePubBar();
+}
+
+function slotCard(slot) {
+  const pend = state.pending[slot.id];
+  const existing = currentFilename(slot);
+  const card = el('div', 'slot' + (pend ? ' is-pending' : ''));
+  card.dataset.slot = slot.id;
+
+  const isVideo = slot.type === 'video';
+  const ar = RATIO[slot.ratio] || 4 / 3;
+
+  // ---- drop zone ----
+  const drop = el('div', 'drop');
+  drop.style.aspectRatio = String(ar);
+  drop.tabIndex = 0;
+  drop.setAttribute('role', 'button');
+  drop.setAttribute('aria-label', `Choose a ${isVideo ? 'video' : 'photo'} for ${slot.id}`);
+
+  if (pend) {
+    if (isVideo) {
+      const v = document.createElement('video'); v.src = pend.previewUrl; v.muted = true; v.controls = false;
+      drop.appendChild(v);
+    } else {
+      const im = document.createElement('img'); im.src = pend.previewUrl; im.alt = ''; drop.appendChild(im);
+    }
+    drop.appendChild(el('span', 'badge pending', 'Waiting'));
+  } else if (existing) {
+    if (isVideo) {
+      drop.appendChild(el('div', 'ph', `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m10 8 6 4-6 4V8Z"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+        <span>${esc(existing)}</span>`));
+    } else {
+      const im = document.createElement('img');
+      im.alt = ''; im.loading = 'lazy';
+      drop.appendChild(im);
+      assetObjectUrl(existing).then(u => {
+        if (u) { im.src = u; return; }
+        // private-repo API fetch failed — try the public raw URL as a fallback
+        im.src = rawUrl(existing);
+        im.onerror = () => { im.remove(); drop.appendChild(el('div', 'ph', `<span>${esc(existing)}</span><em>preview unavailable</em>`)); };
+      });
+    }
+    drop.appendChild(el('span', 'badge filled', 'Has photo'));
+  } else {
+    drop.appendChild(el('div', 'ph', `
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.8" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L7 20"/></svg>
+      <span>${esc(slot.id)}</span><em>${esc(slot.ratio)} · min ${slot.minWidth}px</em>`));
+    drop.appendChild(el('span', 'badge', 'Empty'));
+  }
+  drop.appendChild(el('div', 'drop-hover', `Drop your ${isVideo ? 'video' : 'photo'} here`));
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = isVideo ? 'video/mp4,video/webm' : 'image/*';
+  input.className = 'hidden';
+  input.onchange = () => { if (input.files[0]) handleFile(slot, input.files[0]); input.value = ''; };
+
+  drop.onclick = () => input.click();
+  drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } };
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); card.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); card.classList.remove('drag'); }));
+  drop.addEventListener('drop', e => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(slot, f);
+  });
+
+  card.appendChild(drop);
+  card.appendChild(input);
+
+  // ---- body ----
+  const body = el('div', 'slot-body');
+  body.appendChild(el('div', 'slot-id', esc(slot.id)));
+  body.appendChild(el('div', 'slot-desc', esc(slot.description)));
+
+  if (pend) {
+    const kb = pend.newKB, ok = pend.origKB;
+    const sz = n => n < 1024 ? Math.round(n) + ' KB' : (n / 1024).toFixed(1) + ' MB';
+    let line = `<b>${esc(pend.filename)}</b><br>`;
+    if (pend.w) line += `<span class="nb">${pend.w}×${pend.h}</span> · `;
+    line += `<span class="nb">${sz(kb)}</span>`;
+    if (ok > kb * 1.15) line += ` <span class="nb" style="color:var(--success)">(was ${sz(ok)})</span>`;
+    body.appendChild(el('div', 'slot-file', line));
+    pend.notes.forEach(n => body.appendChild(el('div', 'warnrow',
+      `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg><span>${esc(n)}</span>`)));
+  } else if (existing) {
+    body.appendChild(el('div', 'slot-file', esc(existing)));
+  }
+
+  const meta = el('div', 'slot-meta');
+  meta.appendChild(el('span', 'pill', esc(slot.ratio)));
+  meta.appendChild(el('span', 'pill n', `min ${slot.minWidth}px`));
+  if (isVideo) meta.appendChild(el('span', 'pill n', 'video'));
+  body.appendChild(meta);
+
+  const acts = el('div', 'slot-acts');
+  if (pend) {
+    const undo = el('button', 'btn btn-sm btn-ghost btn-danger', 'Remove');
+    undo.onclick = e => { e.stopPropagation(); URL.revokeObjectURL(pend.previewUrl); delete state.pending[slot.id]; render(); };
+    acts.appendChild(undo);
+  }
+  const pick = el('button', 'btn btn-sm btn-ghost', existing || pend ? 'Replace' : 'Choose file');
+  pick.onclick = e => { e.stopPropagation(); input.click(); };
+  acts.appendChild(pick);
+  body.appendChild(acts);
+
+  card.appendChild(body);
+  return card;
+}
+
+async function handleFile(slot, file) {
+  const isVideo = slot.type === 'video';
+  if (isVideo && !file.type.startsWith('video/')) { alert(`“${slot.id}” is a video slot. Please choose an .mp4 file.`); return; }
+  if (!isVideo && !file.type.startsWith('image/')) { alert(`“${slot.id}” needs a photo. “${file.name}” is not an image.`); return; }
+
+  const card = document.querySelector(`.slot[data-slot="${slot.id}"] .drop`);
+  if (card) card.style.opacity = '.5';
+  try {
+    const r = isVideo ? await processVideo(file, slot) : await processImage(file, slot);
+    const old = state.pending[slot.id];
+    if (old) URL.revokeObjectURL(old.previewUrl);
+    state.pending[slot.id] = {
+      blob: r.blob,
+      filename: makeFilename(slot, r.ext),
+      previewUrl: URL.createObjectURL(r.blob),
+      notes: r.notes, origKB: r.origKB, newKB: r.newKB, w: r.w, h: r.h,
+    };
+    render();
+  } catch (e) {
+    alert('Could not use that file: ' + e.message);
+    if (card) card.style.opacity = '';
+  }
+}
+
+/* filter buttons */
+document.querySelectorAll('.seg button').forEach(b => {
+  b.onclick = () => {
+    state.filter = b.dataset.f;
+    document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    render();
+  };
+});
+
+/* ---------------- publish bar ---------------- */
+function updatePubBar() {
+  const ids = Object.keys(state.pending);
+  $('#pubbar').classList.toggle('on', ids.length > 0);
+  $('#pubCount').textContent = ids.length === 1 ? '1 file' : ids.length + ' files';
+  $('#pubList').textContent = ids.slice(0, 4).join(', ') + (ids.length > 4 ? ` +${ids.length - 4} more` : '');
+  // keep the last cards reachable above the fixed publish bar
+  requestAnimationFrame(() => {
+    const h = ids.length ? $('#pubbar').offsetHeight + 24 : 0;
+    document.body.style.paddingBottom = h + 'px';
+  });
+}
+$('#discardAll').onclick = () => {
+  if (!confirm('Discard all photos waiting to publish?')) return;
+  Object.values(state.pending).forEach(p => URL.revokeObjectURL(p.previewUrl));
+  state.pending = {}; render();
+};
+
+/* ---------------- publish (single commit) ---------------- */
+$('#publish').onclick = publish;
+
+function logLine(msg, cls) { const d = el('div', cls || '', esc(msg)); $('#ovlLog').appendChild(d); $('#ovlLog').scrollTop = 1e6; return d; }
+function setBar(p) { $('#ovlBar').style.width = Math.round(p * 100) + '%'; }
+
+async function publish() {
+  const ids = Object.keys(state.pending);
+  if (!ids.length) return;
+
+  $('#ovl').classList.add('on');
+  $('#ovlTitle').textContent = 'Publishing…';
+  $('#ovlLog').innerHTML = ''; $('#ovlMsg').innerHTML = ''; $('#ovlActs').innerHTML = '';
+  setBar(0.02);
+
+  try {
+    // 0. re-read the branch head so we never clobber someone else's change
+    logLine('Checking the latest version on GitHub…');
+    const ref = await gh(`/repos/${state.repo}/git/ref/heads/${encodeURIComponent(state.branch)}`);
+    const headSha = ref.object.sha;
+    const headCommit = await gh(`/repos/${state.repo}/git/commits/${headSha}`);
+    const baseTree = headCommit.tree.sha;
+
+    // refresh content files (in case they changed since load)
+    const needed = [...new Set(ids.map(id => resolveSlot(state.slots.find(s => s.id === id).path).file))];
+    await Promise.all(needed.map(async f => { state.files[f] = await getFile(f); }));
+    logLine('Up to date.', 'ok');
+
+    const tree = [];
+    let step = 0;
+    const total = ids.length + needed.length + 2;
+
+    // 1. upload each media file as a blob
+    for (const id of ids) {
+      const slot = state.slots.find(s => s.id === id);
+      const p = state.pending[id];
+      logLine(`Uploading ${p.filename}…`);
+      const b64 = await blobToB64(p.blob);
+      const blob = await gh(`/repos/${state.repo}/git/blobs`, {
+        method: 'POST', body: JSON.stringify({ content: b64, encoding: 'base64' }),
+      });
+      tree.push({ path: 'public/assets/' + p.filename, mode: '100644', type: 'blob', sha: blob.sha });
+      setBar(++step / total);
+    }
+
+    // 2. patch the JSON content files (one blob per file, all slots applied)
+    const edits = {};
+    for (const id of ids) {
+      const slot = state.slots.find(s => s.id === id);
+      const { file, keys } = resolveSlot(slot.path);
+      edits[file] = edits[file] || state.files[file].text;
+      edits[file] = setStringAtPath(edits[file], keys, state.pending[id].filename);
+    }
+    for (const [file, text] of Object.entries(edits)) {
+      JSON.parse(text); // safety: never commit invalid JSON
+      logLine(`Updating ${file}…`);
+      const blob = await gh(`/repos/${state.repo}/git/blobs`, {
+        method: 'POST', body: JSON.stringify({ content: textToB64(text), encoding: 'base64' }),
+      });
+      tree.push({ path: file, mode: '100644', type: 'blob', sha: blob.sha });
+      setBar(++step / total);
+    }
+
+    // 3. tree + commit + move branch
+    logLine('Creating the commit…');
+    const newTree = await gh(`/repos/${state.repo}/git/trees`, {
+      method: 'POST', body: JSON.stringify({ base_tree: baseTree, tree }),
+    });
+    const names = ids.join(', ');
+    const commit = await gh(`/repos/${state.repo}/git/commits`, {
+      method: 'POST',
+      body: JSON.stringify({
+        message: `Add media: ${ids.length} slot${ids.length > 1 ? 's' : ''}\n\n${ids.map(i => '- ' + i + ' -> ' + state.pending[i].filename).join('\n')}\n\nvia Photo Manager`,
+        tree: newTree.sha, parents: [headSha],
+      }),
+    });
+    setBar(++step / total);
+
+    await gh(`/repos/${state.repo}/git/refs/heads/${encodeURIComponent(state.branch)}`, {
+      method: 'PATCH', body: JSON.stringify({ sha: commit.sha }),
+    });
+    setBar(1);
+    logLine('Published.', 'ok');
+
+    $('#ovlTitle').textContent = 'Done';
+    $('#ovlMsg').innerHTML = `<div class="notice ok"><b>${ids.length} file${ids.length > 1 ? 's' : ''} published.</b>
+      Netlify is now rebuilding your website — it usually takes about a minute.
+      ${state.branch === 'main' ? 'Then refresh danangchiro.com to see the change.' : ''}</div>`;
+    const link = el('a', 'btn btn-ghost', 'View the change on GitHub');
+    link.href = `https://github.com/${state.repo}/commit/${commit.sha}`;
+    link.target = '_blank'; link.rel = 'noopener';
+    const done = el('button', 'btn btn-green', 'Continue');
+    done.onclick = async () => {
+      Object.values(state.pending).forEach(p => URL.revokeObjectURL(p.previewUrl));
+      state.pending = {};
+      $('#ovl').classList.remove('on');
+      try { await loadEverything(); } catch (e) {}
+      render();
+    };
+    $('#ovlActs').append(done, link);
+
+  } catch (e) {
+    logLine(e.message, 'er');
+    $('#ovlTitle').textContent = 'Something went wrong';
+    let extra = '';
+    if (e.status === 409 || /fast forward|not a fast/i.test(e.message))
+      extra = ' Someone (or another tab) changed the website at the same time. Press Close, then Reload from GitHub, and try again.';
+    if (e.status === 403) extra = ' Check your token still has the <b>repo</b> permission (or <b>Contents: Read and write</b> for fine-grained tokens).' ;
+    if (e.status === 401) extra = ' Your token has expired or been revoked. Sign out and create a new one.';
+    if (/413|too large/i.test(e.message)) extra = ' The file is too big for GitHub. Try a smaller video.';
+    $('#ovlMsg').innerHTML = `<div class="notice err">Nothing was published, so your website is unchanged.
+      Your photos are still waiting here.${extra}</div>`;
+    const close = el('button', 'btn btn-ghost', 'Close');
+    close.onclick = () => $('#ovl').classList.remove('on');
+    $('#ovlActs').append(close);
+  }
+}
+
+/* ---------------- auto sign-in ---------------- */
+(async function init() {
+  const t = localStorage.getItem(LS_TOKEN);
+  if (localStorage.getItem(LS_REPO)) $('#repo').value = localStorage.getItem(LS_REPO);
+  if (localStorage.getItem(LS_BRANCH)) $('#branch').value = localStorage.getItem(LS_BRANCH);
+  if (!t) return;
+  state.token = t;
+  state.repo = $('#repo').value.trim();
+  state.branch = $('#branch').value.trim() || 'main';
+  $('#setupMsg').innerHTML = '<div class="notice">Signing you in…</div>';
+  try { await loadEverything(); enterApp(); }
+  catch (e) { $('#setupMsg').innerHTML = `<div class="notice warn">Could not sign in automatically (${esc(e.message)}). Please paste your token again.</div>`; }
+})();
+</script>
+</body>
+</html>
